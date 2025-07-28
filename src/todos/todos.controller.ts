@@ -1,21 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { TodosService } from './todos.service';
-import { CreateTodoDto } from './dto/create-todo.dto';
-import { UpdateTodoDto } from './dto/update-todo.dto';
-import { Prisma } from 'generated/prisma';
+import { Prisma, User as UserModel } from 'generated/prisma';
+import { JwtAuthGuard } from 'src/auth/jwt-auth/jwt-auth.guard';
+import { User } from 'src/users/users/users.decorator';
+import { TodosGuard } from './todos/todos.guard';
 
 @Controller('todos')
+@UseGuards(TodosGuard)
+@UseGuards(JwtAuthGuard)
 export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Post()
-  create(@Body() todo: Prisma.TodoCreateInput) {
-    return this.todosService.create(todo);
+  create(@User() user: UserModel, @Body() todo: Prisma.TodoCreateInput) {
+    return this.todosService.create(user.id, todo);
   }
 
   @Get()
-  findAll() {
-    return this.todosService.findAll();
+  findAll(@User() user: UserModel) {
+    return this.todosService.findAll(user.id);
   }
 
   @Get(':id')

@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { User } from 'generated/prisma';
 import * as bcrypt from 'bcrypt'
 import { UsersService } from 'src/users/users.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-    constructor (private readonly usersService: UsersService) {}
+    constructor (
+        private  usersService: UsersService,
+        private jwtService:JwtService
+    ) {}
 
     async validateUser(
         username:string,
@@ -24,5 +28,15 @@ export class AuthService {
             }
         }
         return null;
+    }
+    login(user: Omit<User, 'password'>|null){
+        if (user == null){
+            throw new Error('Invalid User')
+        }
+        return {
+            access_token: this.jwtService.sign({
+                sub: user.id
+            })
+        }
     }
 }

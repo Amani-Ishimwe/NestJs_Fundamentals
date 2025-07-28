@@ -9,9 +9,11 @@ export class AuthController {
     @Post('login')
     @UseGuards(LocalAuthGuard)
     async login(@Request() req,@Response() res){
-        //logic will be implemented later
-        return res.status(200).json({
-            user: req.user,
-        })
+        try{
+        const accessToken = this.authService.login(req.user)
+        return res.status(200).json(accessToken)
+        }catch (err){
+        return res.status(403)
+        }
     }
 }
